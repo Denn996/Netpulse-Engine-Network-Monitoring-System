@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netpulse Engine // Control Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 350px;"></div>
+
+<style>
+  
+  .update-toast {
+    background-color: #162230;
+    border-left: 4px solid #f59e0b;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    border-radius: 6px;
+    color: #1f2937;
+    font-family: sans-serif;
+    animation: slideIn 0.3s ease-out;
+  }
+  @keyframes slideIn {
+    from { transform: translateX(110%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+</style>
+<body class="bg-slate-100 font-sans antialiased text-slate-800">
+
+    <div class="flex h-screen overflow-hidden relative">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-100 p-5 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col justify-between shrink-0 shadow-xl md:shadow-none">
+            <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-5 mb-6">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-square-poll-vertical text-emerald-400 text-2xl animate-pulse"></i>
+                        <span class="text-xl font-bold tracking-wider text-white">NETPULSE</span>
+                    </div>
+                    <button id="close-sidebar-btn" class="md:hidden text-slate-400 hover:text-white focus:outline-none"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <nav class="space-y-1">
+                   
+                    <button data-tab="tab-dashboard" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 bg-slate-800 text-emerald-400 rounded-lg transition duration-200 focus:outline-none">
+                        <i class="fa-solid fa-network-wired w-5"></i><span class="text-sm font-semibold text-left">Dashboard</span>
+                    </button>
+                    <button data-tab="tab-devices" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-emerald-400 rounded-lg transition duration-200 focus:outline-none">
+                        <i class="fa-solid fa-server w-5"></i><span class="text-sm font-semibold text-left">Devices</span>
+                    </button>
+                    <button data-tab="tab-settings" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-emerald-400 rounded-lg transition duration-200 focus:outline-none">
+                        <i class="fa-solid fa-gears w-5"></i><span class="text-sm font-semibold text-left">Settings</span>
+                    </button>
+                </nav>
+            </div>
+            <div class="text-xs text-slate-500 text-center border-t border-slate-800 pt-4">NMS Node Status: Connected</div>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0 md:pl-64">
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shrink-0">
+                <div class="flex items-center space-x-4">
+                    <button id="menu-toggle-btn" class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md focus:outline-none"><i class="fa-solid fa-bars text-xl"></i></button>
+                    <h1 id="panel-title" class="text-lg md:text-xl font-bold text-slate-800">Operational Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="scan-now-btn" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs md:text-sm px-4 py-2 rounded-lg transition duration-150 shadow-sm flex items-center space-x-2">
+                        <i id="scan-icon" class="fa-solid fa-rotate"></i> <span id="scan-text">Scan Network Now</span>
+                    </button>
+                    <div class="h-6 w-px bg-slate-200"></div>
+                    <form action="{% url 'logout' %}" method="post" class="margin-0">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-lg transition duration-150 shadow-sm">Logout</button>
+                    </form>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-4 md:p-8">
+                <div class="max-w-7xl mx-auto space-y-6">
+
+                    <div id="critical-alert-banner" class="hidden bg-rose-50 border-l-4 border-rose-500 p-4 rounded-xl shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-500 text-xl animate-bounce mt-0.5"></i>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-bold text-rose-800">Critical Network Incidents Detected</h3>
+                                <div id="offline-device-list" class="mt-1 text-xs md:text-sm text-rose-700 space-y-1"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-dashboard-content" class="tab-pane space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-sm font-medium text-slate-400 uppercase tracking-wider">Total Managed Nodes</h3>
+                                    <p id="count-total" class="text-2xl md:text-3xl font-bold text-slate-800 mt-1">{{ total_devices }}</p>
+                                </div>
+                                <div class="p-3 bg-blue-50 text-blue-500 rounded-lg"><i class="fa-solid fa-server text-xl"></i></div>
+                            </div>
+                            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-sm font-medium text-slate-400 uppercase tracking-wider">Online Nodes</h3>
+                                    <p id="count-online" class="text-2xl md:text-3xl font-bold text-emerald-500 mt-1">{{ online_devices }}</p>
+                                </div>
+                                <div class="p-3 bg-emerald-50 text-emerald-500 rounded-lg"><i class="fa-solid fa-circle-check text-xl"></i></div>
+                            </div>
+                            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-sm font-medium text-slate-400 uppercase tracking-wider">Offline Alarms</h3>
+                                    <p id="count-offline" class="text-2xl md:text-3xl font-bold text-rose-500 mt-1">{{ offline_devices }}</p>
+                                </div>
+                                <div class="p-3 bg-rose-50 text-rose-500 rounded-lg"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-4 md:p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <h2 class="text-md font-bold text-slate-800 mb-4"><i class="fa-solid fa-chart-line text-emerald-500 mr-2"></i> Live Latency Mapping Monitor</h2>
+                            <div class="w-full h-64"><canvas id="latencyChart"></canvas></div>
+                        </div>
+
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div class="px-6 py-4 border-b border-slate-200"><h2 class="text-md font-bold text-slate-800">Dynamic Activity Feeds</h2></div>
+                            <div class="overflow-x-auto">
+                               <table class="w-full text-left border-collapse">
+    <thead>
+        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase text-slate-500 tracking-wider">
+            <th class="px-6 py-3.5">Device Name</th>
+            <th class="px-6 py-3.5">IP Node Target</th>
+            <th class="px-6 py-3.5">Latency</th>
+            <th class="px-6 py-3.5">Health Score</th>
+            <th class="px-6 py-3.5">Core Temp</th>
+            <th class="px-6 py-3.5">Hardware Patch</th>
+            <th class="px-6 py-3.5">Operational Status</th>
+        </tr>
+    </thead>
+    <tbody id="device-table-body" class="divide-y divide-slate-200 text-sm text-slate-600">
+        {% for device in devices %}
+        <tr class="hover:bg-slate-50/70 transition">
+            <td class="px-6 py-4 font-medium text-slate-900">{{ device.name }}</td>
+            <td class="px-6 py-4 font-mono">{{ device.ip_address }}</td>
+            <td class="px-6 py-4">{{ device.latency_ms }} ms</td>
+            <td class="px-6 py-4 font-bold text-emerald-600">{{ device.health_score }}%</td>
+            <td class="px-6 py-4 font-medium">{{ device.temperature_c }}°C</td>
+            <td class="px-6 py-4">
+                        {% if device.update_required %}
+                            <span class="text-amber-600 font-semibold"><i class="fa-solid fa-wrench mr-1"></i> Update Ready</span>
+                        {% else %}
+                            <span class="text-slate-400">Up to date</span>
+                        {% endif %}
+                    </td>
+            <td class="px-6 py-4">
+                        {% if device.status == 'Online' %}
+                            <span class="px-2 py-1 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-full">Online</span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs font-bold bg-rose-100 text-rose-700 rounded-full">Offline</span>
+                        {% endif %}
+                    </td>
+        </tr>
+        {% empty %}
+        <tr id="no-devices-row"><td colspan="7" class="px-6 py-4 text-center text-slate-400">No network devices cataloged. Use the Devices tab to add Network Devices.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-devices-content" class="tab-pane space-y-6 hidden">
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-server text-purple-500 mr-2"></i>Network Device Management Catalog</h2>
+                                <a href="/admin/Netpulse_Engine/networkdevice/add/" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-sm px-4 py-2 rounded-lg transition shadow-sm">
+                                    <i class="fa-solid fa-plus mr-1"></i> Add Network Device
+                                </a>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase text-slate-500 tracking-wider">
+                                            <th class="px-6 py-3">Device Name</th>
+                                            <th class="px-6 py-3">IP Address</th>
+                                            <th class="px-6 py-3">Device Architecture Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200 text-sm text-slate-600">
+                                        {% for device in devices %}
+                                        <tr>
+                                            <td class="px-6 py-4 font-bold text-slate-900">{{ device.name }}</td>
+                                            <td class="px-6 py-4 font-mono">{{ device.ip_address }}</td>
+                                            <td class="px-6 py-4">{{ device.get_device_type_display }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="3" class="px-6 py-4 text-center text-slate-400">No Network Devices added yet. Click "Add Network Device" above to begin.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-settings-content" class="tab-pane space-y-6 hidden">
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-xl">
+                            <h2 class="text-lg font-bold text-slate-800 mb-6"><i class="fa-solid fa-gears text-slate-500 mr-2"></i> Operational Settings</h2>
+                            <p class="text-sm text-slate-500 mb-4">Engine is running automated network polling cycles cleanly in background frames every 15 seconds.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    
+    <script>
+        const activeUpdateAlerts = new Set();
+
+    
+    function triggerHardwareAlert(deviceName, ipAddress) {
+        const container = document.getElementById('alert-container');
+        const alertId = `${deviceName}-${ipAddress}`;
+
+        if (activeUpdateAlerts.has(alertId)) return;
+        activeUpdateAlerts.add(alertId);
+
+        const toast = document.createElement('div');
+        toast.className = 'update-toast';
+        toast.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <strong style="color: #d97706; font-size: 14px;">⚠️ PATCH REQUIRED</strong>
+                <button onclick="this.parentElement.parentElement.remove();" style="background: none; border: none; font-size: 16px; cursor: pointer; color: #9ca3af;">&times;</button>
+            </div>
+            <p style="margin: 6px 0 0 0; font-size: 13px; line-height: 1.4;">
+                Device <strong>${deviceName}</strong> (${ipAddress}) has pending security patches or requires a system reboot.
+            </p>
+        `;
+        container.appendChild(toast);
+    }
+    
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    const panelTitle = document.getElementById('panel-title');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTabId = button.getAttribute('data-tab');
+            tabButtons.forEach(btn => btn.classList.remove('bg-slate-800', 'text-emerald-400'));
+            button.classList.add('bg-slate-800', 'text-emerald-400');
+            
+            tabPanes.forEach(pane => pane.classList.add('hidden'));
+            document.getElementById(`${targetTabId}-content`).classList.remove('hidden');
+
+            if(targetTabId === 'tab-dashboard') panelTitle.innerText = "Operational Dashboard";
+            if(targetTabId === 'tab-devices') panelTitle.innerText = "Asset Management Catalog";
+            if(targetTabId === 'tab-settings') panelTitle.innerText = "Operational Settings";
+        });
+    });
+
+    
+    const sidebar = document.getElementById('sidebar');
+    document.getElementById('menu-toggle-btn').addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
+    document.getElementById('close-sidebar-btn').addEventListener('click', () => sidebar.classList.add('-translate-x-full'));
+
+    
+let deviceHistory = {}; 
+const lineColors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+
+const chartCtx = document.getElementById('latencyChart').getContext('2d');
+const latencyChart = new Chart(chartCtx, {
+    type: 'line',
+    data: {
+        labels: ['Run 1', 'Run 2', 'Run 3', 'Run 4', 'Run 5'],
+        datasets: [] 
+    },
+    options: { 
+        responsive: true, 
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'top' } } 
+    }
+});
+
+function runNetworkScan(isBackground = false) {
+    const scanBtn = document.getElementById('scan-now-btn');
+    const scanIcon = document.getElementById('scan-icon');
+    const scanText = document.getElementById('scan-text');
+    const alertBanner = document.getElementById('critical-alert-banner');
+    const offlineList = document.getElementById('offline-device-list');
+
+    if (!isBackground) {
+        scanIcon.classList.add('animate-spin');
+        scanText.innerText = "Scanning Active Infrastructure...";
+        scanBtn.disabled = true;
+    }
+
+    fetch('/api/scan/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('count-total').innerText = data.total;
+                document.getElementById('count-online').innerText = data.online;
+                document.getElementById('count-offline').innerText = data.offline;
+
+                const tableBody = document.getElementById('device-table-body');
+                tableBody.innerHTML = '';
+                offlineList.innerHTML = '';
+                
+                let brokenDevices = [];
+                let newDatasets = []; 
+
+                if (data.devices.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-4 text-center text-slate-400">No network devices cataloged. Use the Devices tab to provision assets.</td></tr>`;
+                    latencyChart.data.datasets = [];
+                    latencyChart.update();
+                    return;
+                }
+
+                data.devices.forEach((device, index) => {
+                    if (device.status === 'Offline') {
+                        brokenDevices.push(device.name);
+                    }
+                    
+                    // ⭐ 2. DEVICE HISTORY TRACKING
+                    if (!deviceHistory[device.id]) {
+                        deviceHistory[device.id] = [0, 0, 0, 0, 0];
+                    }
+                    deviceHistory[device.id].shift();
+                    deviceHistory[device.id].push(device.status === 'Online' ? device.latency_ms : 0);
+
+                    
+                    newDatasets.push({
+                        label: `${device.name} (${device.ip_address})`,
+                        data: deviceHistory[device.id],
+                        borderColor: lineColors[index % lineColors.length],
+                        backgroundColor: 'transparent',
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        tension: 0.25
+                    });
+
+                    if (device.update_required === true || device.update_required === "True") {
+                       triggerHardwareAlert(device.name, device.ip_address);
+                    } else {
+                       
+                       const alertId = `${device.name}-${device.ip_address}`;
+                        activeUpdateAlerts.delete(alertId);
+               }
+
+                    
+                    let healthColor = 'text-rose-600 font-bold';
+                    if (device.health_score > 90) {
+                        healthColor = 'text-emerald-600 font-bold';
+                    } else if (device.health_score > 70) {
+                        healthColor = 'text-amber-500 font-bold';
+                    }
+                    
+                    const patchCell = device.update_required 
+                        ? `<span class="text-amber-600 font-semibold"><i class="fa-solid fa-wrench mr-1"></i> Update Ready</span>`
+                        : `<span class="text-slate-400">Up to date</span>`;
+
+                    const tempDisplay = device.status === 'Online' ? `${device.temperature_c}°C` : '0.0°C';
+                    const badgeColor = device.status === 'Online' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
+                    
+                    const rowHTML = `
+                        <tr class="hover:bg-slate-50/70 transition">
+                            <td class="px-6 py-4 font-medium text-slate-900">${device.name}</td>
+                            <td class="px-6 py-4 font-mono">${device.ip_address}</td>
+                            <td class="px-6 py-4">${device.latency_ms} ms</td>
+                            <td class="px-6 py-4 ${healthColor}">${device.health_score}%</td>
+                            <td class="px-6 py-4 font-medium">${tempDisplay}</td>
+                            <td class="px-6 py-4">${patchCell}</td>
+                            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-bold ${badgeColor} rounded-full">${device.status}</span></td>
+                        </tr>`;
+                    tableBody.insertAdjacentHTML('beforeend', rowHTML);
+                });
+
+                
+                if (brokenDevices.length > 0) {
+                    alertBanner.classList.remove('hidden');
+                    brokenDevices.forEach(name => {
+                        offlineList.insertAdjacentHTML('beforeend', `<p class="font-medium">⚠️ Device <strong>${name}</strong> is unreachable on the network matrix.</p>`);
+                    });
+                } else {
+                    alertBanner.classList.add('hidden');
+                }
+
+               
+                latencyChart.data.datasets = newDatasets;
+                latencyChart.update();
+            }
+        })
+        .catch(error => console.error('NMS Error:', error))
+        .finally(() => {
+            if (!isBackground) {
+                scanIcon.classList.remove('animate-spin');
+                scanText.innerText = "Scan Network Now";
+                scanBtn.disabled = false;
+            }
+        });
+}
+
+    
+    document.getElementById('scan-now-btn').addEventListener('click', () => runNetworkScan(false));
+
+
+    setInterval(() => {
+        console.log("Automated background heartbeat check running...");
+        runNetworkScan(true);
+    }, 15000);
+
+   
+    window.addEventListener('DOMContentLoaded', () => runNetworkScan(true));
+    </script>
+</body>
+</html>

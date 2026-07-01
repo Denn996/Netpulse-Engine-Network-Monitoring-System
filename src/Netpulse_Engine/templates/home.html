@@ -1,0 +1,71 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Netpulse Engine - Home</title>
+    <style>
+        * { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; background-color: #205386; color: #092642; min-height: 100vh; }
+        
+        
+        .sidebar { width: 260px; background-color: #0f172a; color: #fff; padding: 24px; display: flex; flex-direction: column; gap: 30px; }
+        .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #38bdf8; }
+        .nav-links { display: flex; flex-direction: column; gap: 10px; list-style: none; }
+        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px; border-radius: 8px; transition: 0.2s; }
+        .nav-links .active, .nav-links a:hover { background-color: #1e293b; color: #fff; }
+
+        
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .header { background: rgb(38, 19, 73); padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .header h1 { font-size: 28px; color: #ffffff; }
+        
+        
+        .card { background: rgb(255, 255, 255); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); line-height: 1.6; }
+        .card h2 { color: #000000; margin-bottom: 15px; font-size: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+        .feature-list { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; list-style: none; }
+        .feature-item { background: #f1f5f9; padding: 15px; border-radius: 8px; border-left: 4px solid #38bdf8; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand">📊 NETPULSE</div>
+        <ul class="nav-links">
+            <li><a href="{% url 'home' %}" class="active">🏠 Home</a></li>
+            <li><a href="{% url 'dashboard' %}">📈 Dashboard</a></li>
+            
+
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Project Documentation</h1>
+        </div>
+
+        <div class="card">
+            <h2>About Netpulse Engine</h2>
+            <p><strong>Netpulse Engine</strong> is an automated, high-performance Network Monitoring System (NMS) built using Django, Daphne ASGI, and JavaScript frameworks. It provides system administrators with immediate visibility into infrastructure health, connectivity lifecycles, and device system states.</p>
+            
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <strong>Real-Time Latency Tracking</strong>
+                    <p>Monitors network node responsiveness utilizing sub-millisecond precision loops and live Chart.js rendering.</p>
+                </li>
+                <li class="feature-item">
+                    <strong>Hardware Patch Automation</strong>
+                    <p>Interrogates local file system registries and SNMP configurations to instantly discover missing security patches.</p>
+                </li>
+                <li class="feature-item">
+                    <strong>Live Toast Notification Alarms</strong>
+                    <p>Intercepts critical system changes instantly using non-intrusive frontend sliding alert cards.</p>
+                </li>
+                <li class="feature-item">
+                    <strong>Network Device Catalog Management</strong>
+                    <p>Enables structural device tracking via a secure Django administrative database matrix.</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>
