@@ -1,7 +1,7 @@
 import os
 import time
 import psutil
-import random
+#import random
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
@@ -11,26 +11,26 @@ from .models import NetworkDevice
 from .utils import ping_device
 
 # 1. Public Welcome Screen Route
-
+@login_required(login_url='login')
 def home(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
+    
     return render(request, 'home.html')
 
 # 2. Secure Operator Sign Up Interface Logic
+
 def signup_view(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('dashboard')
+            return redirect('home')
     else:
         form = UserCreationForm()
     return render(request, 'registration/signup.html', {'form': form})
 
 # 3. Protected Dashboard Analytics View Matrix
-@login_required(login_url='login')
+
 def dashboard(request):
     devices = NetworkDevice.objects.all()
     
@@ -85,7 +85,7 @@ def fetch_actual_temperature(ip_address, device_name):
         pass
 
     # Case C: If the target device does not support SNMP or ignores requests
-    return round(random.uniform(39.0, 48.5), 1) 
+    #return round(random.uniform(39.0, 48.5), 1) 
 
 # 📡 HELPER FUNCTION: Computes real resource health scores
 def fetch_actual_health(ip_address, device_name):

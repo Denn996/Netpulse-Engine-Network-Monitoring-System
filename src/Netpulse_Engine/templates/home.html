@@ -1,71 +1,224 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Netpulse Engine - Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        * { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { display: flex; background-color: #205386; color: #092642; min-height: 100vh; }
-        
-        
-        .sidebar { width: 260px; background-color: #0f172a; color: #fff; padding: 24px; display: flex; flex-direction: column; gap: 30px; }
-        .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #38bdf8; }
-        .nav-links { display: flex; flex-direction: column; gap: 10px; list-style: none; }
-        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px; border-radius: 8px; transition: 0.2s; }
-        .nav-links .active, .nav-links a:hover { background-color: #1e293b; color: #fff; }
+        /* --- Base Defaults & Smooth Flow --- */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
 
+        /* --- High-Comfort Anti-Glare Dark Background Matrix --- */
+        .glare-protect-bg {
+            background-image: linear-gradient(rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.94)), 
+                              url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1934&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
         
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .header { background: rgb(38, 19, 73); padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .header h1 { font-size: 28px; color: #ffffff; }
+        /* --- Fixed Notification Anchor --- */
+        #alert-container {
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            z-index: 9999; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            max-width: 350px;
+        }
+
+        /* --- Content Layout Engine --- */
+        .main-content { 
+            flex: 1; 
+            padding: 40px; 
+            overflow-y: auto; 
+        }
         
+        /* --- Deep Subtle Glass Header --- */
+        .header { 
+            background: rgba(30, 27, 75, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 32px; 
+            border-radius: 16px; 
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); 
+            margin-bottom: 30px; 
+        }
         
-        .card { background: rgb(255, 255, 255); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); line-height: 1.6; }
-        .card h2 { color: #000000; margin-bottom: 15px; font-size: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
-        .feature-list { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; list-style: none; }
-        .feature-item { background: #f1f5f9; padding: 15px; border-radius: 8px; border-left: 4px solid #38bdf8; }
+        .header h1 { 
+            font-size: 32px; 
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: #ffffff; 
+        }
+        
+        /* --- Low-Strain Matte Workspace Card --- */
+        .card { 
+            background: rgba(30, 41, 59, 0.7); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 40px; 
+            border-radius: 16px; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4); 
+            line-height: 1.75; 
+        }
+        
+        .card h2 { 
+            color: #f8fafc; 
+            margin-bottom: 20px; 
+            font-size: 22px; 
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            padding-bottom: 12px; 
+        }
+        
+        .feature-list { 
+            margin-top: 30px; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            list-style: none; 
+        }
+        
+        @media(max-width: 768px) {
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- Adaptive Dark Mode Feature Panes --- */
+        .feature-item { 
+            background: rgba(15, 23, 42, 0.6); 
+            padding: 24px; 
+            border-radius: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-left: 4px solid #10b981; 
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(15, 23, 42, 0.8);
+        }
     </style>
 </head>
-<body>
+<body class="glare-protect-bg font-sans antialiased text-slate-300 flex min-h-screen">
 
-    <div class="sidebar">
-        <div class="brand">📊 NETPULSE</div>
-        <ul class="nav-links">
-            <li><a href="{% url 'home' %}" class="active">🏠 Home</a></li>
-            <li><a href="{% url 'dashboard' %}">📈 Dashboard</a></li>
+    <div id="alert-container"></div>
+
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-950/80 backdrop-blur-md text-slate-100 p-5 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col justify-between shrink-0 border-r border-white/5 shadow-xl md:shadow-none">
+        <div>
+            <div class="flex items-center justify-between border-b border-slate-800 pb-5 mb-6">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-square-poll-vertical text-emerald-400 text-2xl animate-pulse"></i>
+                    <span class="text-xl font-bold tracking-wider text-white">NETPULSE ENGINE</span>
+                </div>
+                <button id="close-sidebar-btn" class="md:hidden text-slate-400 hover:text-white focus:outline-none">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
             
+            <nav class="space-y-1">
+                <button data-tab="tab-home" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-300 hover:bg-slate-800/60 hover:text-emerald-400 rounded-lg transition duration-200 focus:outline-none bg-slate-800/80 text-emerald-400 border border-emerald-500/10">
+                    <i class="fa-solid fa-house w-5"></i>
+                    <span class="text-sm font-semibold text-left">
+                        <a href="{% url 'home' %}" class="active">Home</a>
+                    </span> 
+                </button>
+                
+                <button data-tab="tab-dashboard" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-400 hover:bg-slate-800/60 hover:text-emerald-400 rounded-lg transition duration-200 focus:outline-none">
+                    <i class="fa-solid fa-chart-line w-5"></i>
+                    <span class="text-sm font-semibold text-left">
+                        <a href="{% url 'dashboard' %}">Dashboard</a>
+                    </span>
+                </button>
+            
+                <button data-tab="tab-devices" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-400 hover:bg-slate-800/60 hover:text-emerald-400 rounded-lg transition duration-200 focus:outline-none">
+                    <i class="fa-solid fa-server w-5"></i>
+                    <span class="text-sm font-semibold text-left">Devices</span>
+                </button>
+                
+                <button data-tab="tab-settings" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-400 hover:bg-slate-800/60 hover:text-emerald-400 rounded-lg transition duration-200 focus:outline-none">
+                    <i class="fa-solid fa-gears w-5"></i>
+                    <span class="text-sm font-semibold text-left">Settings</span>
+                </button>
+            </nav>
+        </div>
+        
+        <div class="text-xs text-slate-500 text-center border-t border-slate-900 pt-4">NMS Node Status: Connected</div>
+    </aside>
 
-        </ul>
-    </div>
-
-    <div class="main-content">
+    <div class="main-content md:pl-72 max-w-7xl mx-auto w-full transition-all duration-300">
+        
         <div class="header">
-            <h1>Project Documentation</h1>
+            <h1>Netpulse Engine NMS</h1>
+            <p class="text-sm text-indigo-300 font-medium tracking-wide mt-1 uppercase">Central Node Overview & System Documentation</p>
         </div>
 
         <div class="card">
-            <h2>About Netpulse Engine</h2>
-            <p><strong>Netpulse Engine</strong> is an automated, high-performance Network Monitoring System (NMS) built using Django, Daphne ASGI, and JavaScript frameworks. It provides system administrators with immediate visibility into infrastructure health, connectivity lifecycles, and device system states.</p>
+            <h2>System Infrastructure Architecture</h2>
+            <p class="text-slate-300 leading-relaxed">
+                <strong class="text-emerald-400 font-semibold">Netpulse Engine</strong> is an automated, high-performance Network Monitoring System (NMS) cleanly deployed using Django, Daphne ASGI topologies, and asynchronous frontend frameworks. It provides enterprise infrastructure administrators with unified, immediate visibility into matrix connectivity status paths, micro-latency cycles, and remote equipment health profiles.
+            </p>
             
             <ul class="feature-list">
                 <li class="feature-item">
-                    <strong>Real-Time Latency Tracking</strong>
-                    <p>Monitors network node responsiveness utilizing sub-millisecond precision loops and live Chart.js rendering.</p>
+                    <div class="flex items-center space-x-2.5 mb-2 text-white">
+                        <i class="fa-solid fa-microchip text-emerald-400"></i>
+                        <strong class="text-base">Real-Time Latency Tracking</strong>
+                    </div>
+                    <p class="text-sm text-slate-400">Monitors network node responsiveness utilizing sub-millisecond precision loops and live Chart.js rendering pipelines.</p>
                 </li>
                 <li class="feature-item">
-                    <strong>Hardware Patch Automation</strong>
-                    <p>Interrogates local file system registries and SNMP configurations to instantly discover missing security patches.</p>
+                    <div class="flex items-center space-x-2.5 mb-2 text-white">
+                        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                        <strong class="text-base">Hardware Patch Automation</strong>
+                    </div>
+                    <p class="text-sm text-slate-400">Interrogates system environment records and SNMP configuration fields to discover system deployment gaps or vulnerabilities.</p>
                 </li>
                 <li class="feature-item">
-                    <strong>Live Toast Notification Alarms</strong>
-                    <p>Intercepts critical system changes instantly using non-intrusive frontend sliding alert cards.</p>
+                    <div class="flex items-center space-x-2.5 mb-2 text-white">
+                        <i class="fa-solid fa-bell text-emerald-400"></i>
+                        <strong class="text-base">Live Toast Notification Alarms</strong>
+                    </div>
+                    <p class="text-sm text-slate-400">Intercepts critical device transitions instantaneously using smooth sliding frontend layout alert triggers.</p>
                 </li>
                 <li class="feature-item">
-                    <strong>Network Device Catalog Management</strong>
-                    <p>Enables structural device tracking via a secure Django administrative database matrix.</p>
+                    <div class="flex items-center space-x-2.5 mb-2 text-white">
+                        <i class="fa-solid fa-layer-group text-emerald-400"></i>
+                        <strong class="text-base">Device Matrix Management</strong>
+                    </div>
+                    <p class="text-sm text-slate-400">Enables deep database inventory record tracking via a secured Django object-relational administration layout.</p>
                 </li>
             </ul>
         </div>
     </div>
 
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        // Simple placeholder binders for future mobile workspace navigation expansion
+        document.body.insertAdjacentHTML('beforeend', `
+            <button id="menu-toggle-btn" class="md:hidden fixed bottom-6 right-6 z-50 bg-slate-950/90 text-emerald-400 p-4 rounded-full border border-emerald-500/20 shadow-2xl">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        `);
+        
+        document.getElementById('menu-toggle-btn').addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
+        document.getElementById('close-sidebar-btn').addEventListener('click', () => sidebar.classList.add('-translate-x-full'));
+    </script>
 </body>
 </html>

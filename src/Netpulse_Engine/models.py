@@ -1,5 +1,4 @@
 from django.db import models
-import random
 
 class NetworkDevice(models.Model):
     DEVICE_CHOICES = [
@@ -7,6 +6,9 @@ class NetworkDevice(models.Model):
         ('Switch', 'L2/L3 Switch'),
         ('Access Point', 'Wireless AP / Bridge'),
         ('Server', 'Bare Metal Server'),
+        ('Firewall', 'Network Firewall'),
+        ('Load Balancer', 'Load Balancer'),
+        ('Other', 'Other Network Device'),
     ]
 
     name = models.CharField(max_length=100)
@@ -17,8 +19,8 @@ class NetworkDevice(models.Model):
     last_checked = models.DateTimeField(auto_now=True)
     
     # 📊 Telemetry Data Fields
-    health_score = models.IntegerField(default=100)       
-    temperature_c = models.FloatField(default=40.0)       
+    health_score = models.IntegerField(default=100, null=True, blank=True)  # Health score out of 100
+    temperature_c = models.FloatField(default=40.0, null=True, blank=True)       
     update_required = models.BooleanField(default=False)   
 
     def __str__(self):
@@ -33,12 +35,11 @@ class NetworkDevice(models.Model):
             self.latency_ms = calculated_latency
             
             if resolved_status == 'Online':
-                self.health_score = random.randint(94, 100)
-                self.temperature_c = round(random.uniform(36.5, 52.0), 1)
-                self.update_required = random.choice([True, False])
+                pass
+             
             else:
-                self.health_score = 0
-                self.temperature_c = 0.0
-                self.update_required = False
+                 self.health_score = 0
+                 self.temperature_c = 0.0
+                 self.update_required = False
                 
         super().save(*args, **kwargs)
