@@ -1,7 +1,6 @@
 import os
 import time
 import psutil
-#import random
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
@@ -16,21 +15,20 @@ def home(request):
     
     return render(request, 'home.html')
 
-# 2. Secure Operator Sign Up Interface Logic
 
+# 2. Secure Operator Sign Up Interface Logic
 def signup_view(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('home')
+            return redirect('login')
     else:
         form = UserCreationForm()
     return render(request, 'registration/signup.html', {'form': form})
 
 # 3. Protected Dashboard Analytics View Matrix
-
 def dashboard(request):
     devices = NetworkDevice.objects.all()
     
@@ -48,7 +46,6 @@ def dashboard(request):
     return render(request, 'dashboard.html', context)
 
 # 4. Asynchronous JS Fetch API Node Scanner Channel
-
 def fetch_actual_temperature(ip_address, device_name):
     # Case A: If it's your local Ubuntu machine
     if device_name.lower() == "laptop" or ip_address == "127.0.0.1":
