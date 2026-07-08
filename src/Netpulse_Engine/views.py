@@ -1,5 +1,4 @@
 import os
-import time
 import psutil
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -81,8 +80,7 @@ def fetch_actual_temperature(ip_address, device_name):
     except Exception:
         pass
 
-    # Case C: If the target device does not support SNMP or ignores requests
-    #return round(random.uniform(39.0, 48.5), 1) 
+    
 
 # 📡 HELPER FUNCTION: Computes real resource health scores
 def fetch_actual_health(ip_address, device_name):
@@ -177,28 +175,6 @@ def fetch_actual_update_status(ip_address, device_name):
     
     return False
 
-def fetch_actual_update_status(ip_address, device_name):
-    # 1. For your Local Ubuntu Laptop: Genuinely check system files
-    if device_name.lower() == "laptop" or ip_address == "127.0.0.1":
-        try:
-            import os
-            notifier_path = '/var/lib/update-notifier/updates-available'
-            if os.path.exists(notifier_path):
-                with open(notifier_path, 'r') as f:
-                    content = f.read()
-                    if "0 updates" not in content and ("updates" in content or "security" in content):
-                        return True 
-            
-            if os.path.exists('/var/run/reboot-required'):
-                return True 
-        except Exception:
-            pass
-        return False
-
-    # 2. For Remote Devices via SNMP (Placeholder for your switch/router tracking)
-    # ... your SNMP code ...
-
-    return False
 
 
 @login_required(login_url='login')

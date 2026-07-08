@@ -8,12 +8,13 @@ from .models import NetworkDevice
 
 @receiver(post_save, sender=NetworkDevice)
 def trigger_hardware_alert(sender, instance, **kwargs):
-    if instance.update_available:
+    if instance.update_required:
         channel_layer = get_channel_layer()
-        
+
+        firmware = getattr(instance, 'firmware_version', 'Latest OS Patch')
         alert_html = render_to_string('partials/dashboard_alerts_websocket.html', {
             'device_name': instance.name,
-            'firmware': instance.firmware_version
+            'firmware': firmware
         })
         
         async_to_sync(channel_layer.group_send)(

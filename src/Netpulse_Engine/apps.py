@@ -6,5 +6,5 @@ class NetpulseEngineConfig(AppConfig):
     name = 'Netpulse_Engine'
 
 
-def ready(self):
-    import Netpulse_Engine.signals
+    def ready(self):
+       import Netpulse_Engine.signals
